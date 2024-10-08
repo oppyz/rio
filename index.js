@@ -1,4 +1,15 @@
 require('dotenv').config();
+const express = require('express'); // ถ้าคุณใช้ Express
+const app = express();
+
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
+// โค้ดอื่นๆ ของคุณ
+
 const { Client, GatewayIntentBits } = require('discord.js');
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
 const ytdl = require('@distube/ytdl-core');
