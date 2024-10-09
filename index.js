@@ -222,7 +222,7 @@ function play(guild, song) {
 
     const stream = ytdl(song.url, {
         filter: 'audioonly',
-        highWaterMark: 1 << 25 // เพิ่มขนาด buffer เป็น 32MB
+        highWaterMark: 1 << 24 // ลองปรับขนาด buffer เป็น 16MB
     });
 
     const resource = createAudioResource(stream);
@@ -230,7 +230,6 @@ function play(guild, song) {
 
     audioPlayer.play(resource);
 
-    // จัดการเหตุการณ์เมื่อเพลงเล่นจบหรือเกิดข้อผิดพลาด
     audioPlayer.on(AudioPlayerStatus.Idle, () => {
         if (serverQueue.repeat) {
             play(guild, song); // เล่นเพลงเดิมซ้ำ
@@ -255,7 +254,7 @@ function play(guild, song) {
         if (serverQueue.songs.length > 0) {
             play(guild, serverQueue.songs[0]); // เล่นเพลงถัดไปถ้ามี
         } else {
-            serverQueue.connection.destroy(); // ออกจากช่องเสียงถ้าไม่มีเพลงในคิว
+            serverQueue.connection.destroy(); // ออกจากช่องเสียงถ้าคิวว่าง
             queue.delete(guild.id); // ลบคิวของเซิร์ฟเวอร์
         }
     });
@@ -264,4 +263,4 @@ function play(guild, song) {
     serverQueue.textChannel.send(`ตอนนี้กำลังเล่น: ${song.title}`);
 }
 
-client.login(process.env.BOT_TOKEN);
+client.login(process.env.DISCORD_TOKEN);
