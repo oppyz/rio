@@ -62,16 +62,7 @@ client.on('messageCreate', async message => {
                 }));
 
                 if (!serverQueue) {
-                    const queueConstruct = {
-                        textChannel: message.channel,
-                        voiceChannel: channel,
-                        connection: null,
-                        songs: [],
-                        playing: true,
-                        repeat: false,
-                        repeatQueue: false
-                    };
-
+                    const queueConstruct = createQueueConstruct(message, channel);
                     queue.set(message.guild.id, queueConstruct);
                     queueConstruct.songs.push(...songs);
 
@@ -112,16 +103,7 @@ client.on('messageCreate', async message => {
             };
 
             if (!serverQueue) {
-                const queueConstruct = {
-                    textChannel: message.channel,
-                    voiceChannel: channel,
-                    connection: null,
-                    songs: [],
-                    playing: true,
-                    repeat: false,
-                    repeatQueue: false
-                };
-
+                const queueConstruct = createQueueConstruct(message, channel);
                 queue.set(message.guild.id, queueConstruct);
                 queueConstruct.songs.push(song);
 
@@ -211,6 +193,19 @@ client.on('messageCreate', async message => {
     }
 });
 
+// ฟังก์ชันสร้างคิว
+function createQueueConstruct(message, channel) {
+    return {
+        textChannel: message.channel,
+        voiceChannel: channel,
+        connection: null,
+        songs: [],
+        playing: true,
+        repeat: false,
+        repeatQueue: false
+    };
+}
+
 // ฟังก์ชันเล่นเพลง
 function play(guild, song) {
     const serverQueue = queue.get(guild.id);
@@ -247,20 +242,14 @@ function play(guild, song) {
         }
     });
 
-    audioPlayer.on('error', error => {
-        console.error('Error:', error.message);
-        serverQueue.textChannel.send('เกิดข้อผิดพลาดระหว่างเล่นเพลง.');
-        serverQueue.songs.shift(); // ลบเพลงที่เกิดปัญหาออกจากคิว
-        if (serverQueue.songs.length > 0) {
-            play(guild, serverQueue.songs[0]); // เล่นเพลงถัดไปถ้ามี
-        } else {
-            serverQueue.connection.destroy(); // ออกจากช่องเสียงถ้าคิวว่าง
-            queue.delete(guild.id); // ลบคิวของเซิร์ฟเวอร์
-        }
+    audioPlayer.on('error', (error) => {
+        console.error('Error with audio player:', error);
+        serverQueue.songs.shift(); // ลบเพลงที่เกิดข้อผิดพลาดออกจากคิว
+        play(guild, serverQueue.songs[0]); // เล่นเพลงถัดไป
     });
 
     serverQueue.connection.subscribe(audioPlayer);
-    serverQueue.textChannel.send(`ตอนนี้กำลังเล่น: ${song.title}`);
+    serverQueue.textChannel.send(`กำลังเล่น: **${song.title}**`);
 }
 
-client.login(process.env.DISCORD_TOKEN);
+client.login(process.env.TOKEN);
